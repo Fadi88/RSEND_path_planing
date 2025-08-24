@@ -1,46 +1,95 @@
 #include <ros/ros.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
+#include <visualization_msgs/Marker.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 
-// Define a client for to send goal requests to the move_base server through a SimpleActionClient
+// Define a client for the move_base action
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
+
+// Global variables
+geometry_msgs::Pose home_pose;
+bool home_pose_set = false;
+MoveBaseClient *ac;
+ros::Subscriber pose_sub;
+
+void poseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg)
+{
+    if (!home_pose_set)
+    {
+        home_pose = msg->pose.pose;
+        home_pose_set = true;
+        ROS_INFO("Home position set to (x:%.2f, y:%.2f)", home_pose.position.x, home_pose.position.y);
+        pose_sub.shutdown();
+    }
+}
+
+void markerCallback(const visualization_msgs::Marker::ConstPtr &marker_msg)
+{
+    if (marker_msg->action == visualization_msgs::Marker::ADD)
+    {
+        ROS_INFO("Received a new marker. Setting it as the new goal.");
+
+        move_base_msgs::MoveBaseGoal goal;
+        goal.target_pose.header.frame_id = "map";
+        goal.target_pose.header.stamp = ros::Time::now();
+        goal.target_pose.pose = marker_msg->pose;
+
+        ac->sendGoal(goal);
+        ac->waitForResult();
+
+        if (ac->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+        {
+            ROS_INFO("Hooray, the robot reached the marker!");
+            ROS_INFO("Returning to home position...");
+
+            move_base_msgs::MoveBaseGoal home_goal;
+            home_goal.target_pose.header.frame_id = "map";
+            home_goal.target_pose.header.stamp = ros::Time::now();
+            home_goal.target_pose.pose = home_pose;
+
+            ac->sendGoal(home_goal);
+            ac->waitForResult();
+
+            if (ac->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+            {
+                ROS_INFO("Successfully returned to home!");
+            }
+            else
+            {
+                ROS_WARN("Failed to return to home.");
+            }
+        }
+        else
+        {
+            ROS_WARN("The robot failed to reach the marker.");
+        }
+    }
+}
 
 int main(int argc, char **argv)
 {
-    // Initialize the simple_navigation_goals node
     ros::init(argc, argv, "pick_objects");
+    ros::NodeHandle nh;
 
-    // tell the action client that we want to spin a thread by default
-    MoveBaseClient ac("move_base", true);
+    // Set up the action client
+    MoveBaseClient action_client("move_base", true);
+    ac = &action_client;
 
-    // Wait 5 sec for move_base action server to come up
-    while (!ac.waitForServer(ros::Duration(5.0)))
+    while (!ac->waitForServer(ros::Duration(5.0)))
     {
         ROS_INFO("Waiting for the move_base action server to come up");
     }
 
-    move_base_msgs::MoveBaseGoal goal;
+    // Subscribe to the initial pose to set the home coordinates
+    pose_sub = nh.subscribe("/amcl_pose", 1, poseCallback);
 
-    // set up the frame parameters
-    goal.target_pose.header.frame_id = "map";
-    goal.target_pose.header.stamp = ros::Time::now();
+    // Subscribe to the marker topic to receive goals
+    ros::Subscriber marker_sub = nh.subscribe("visualization_marker", 1, markerCallback);
 
-    // Define a position and orientation for the robot to reach
-    goal.target_pose.pose.position.x = 1.7;
-    goal.target_pose.pose.orientation.w = -1.3;
+    ROS_INFO("Pick objects node is running. Waiting for a marker to be published...");
 
-    // Send the goal position and orientation for the robot to reach
-    ROS_INFO("Sending goal");
-    ac.sendGoal(goal);
-
-    // Wait an infinite time for the results
-    ac.waitForResult();
-
-    // Check if the robot reached its goal
-    if (ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-        ROS_INFO("Hooray, the base moved 1 meter forward");
-    else
-        ROS_INFO("The base failed to move forward 1 meter for some reason");
+    ros::spin();
 
     return 0;
 }
