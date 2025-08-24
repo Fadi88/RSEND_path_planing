@@ -22,12 +22,12 @@ int main(int argc, char **argv)
     move_base_msgs::MoveBaseGoal goal;
 
     // set up the frame parameters
-    goal.target_pose.header.frame_id = "base_link";
+    goal.target_pose.header.frame_id = "map";
     goal.target_pose.header.stamp = ros::Time::now();
 
     // Define a position and orientation for the robot to reach
-    goal.target_pose.pose.position.x = 1.0;
-    goal.target_pose.pose.orientation.w = 1.0;
+    goal.target_pose.pose.position.x = 1.7;
+    goal.target_pose.pose.orientation.w = -1.3;
 
     // Send the goal position and orientation for the robot to reach
     ROS_INFO("Sending goal");
