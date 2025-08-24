@@ -50,7 +50,7 @@ check_error "Failed to update package list."
 sudo apt install xterm ros-noetic-gazebo-ros-pkgs ros-noetic-gazebo-ros-control ros-noetic-slam-gmapping ros-noetic-gmapping -y
 check_error "Failed to install Gazebo and Gmapping packages."
 
-sudo apt install ros-noetic-turtlebot3-msgs ros-noetic-turtlebot3 ros-noetic-turtlebot3-simulations -y
+sudo apt install ros-noetic-turtlebot3-msgs ros-noetic-turtlebot3 ros-noetic-turtlebot3-simulations ros-noetic-dwa-local-planner -y
 check_error "Failed to install TurtleBot3 packages."
 
 # Set the TurtleBot3 model

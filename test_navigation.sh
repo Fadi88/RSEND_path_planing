@@ -15,8 +15,6 @@ function cleanup {
     fi
   done
   pkill -f "roscore"
-  pkill -f "gzserver"
-  pkill -f "gzclient"
   exit 0
 }
 
@@ -27,8 +25,8 @@ roslaunch turtlebot3_gazebo turtlebot3_house.launch &
 PIDS+=($!)
 sleep 10
 
-echo "Launching Gmapping demo..."
-roslaunch turtlebot3_slam turtlebot3_gmapping.launch &
+echo "Launching amcl demo..."
+roslaunch roslaunch turtlebot3_navigation amcl.launch &
 PIDS+=($!)
 
 echo "Launching Rviz with Gmapping visualization..."
