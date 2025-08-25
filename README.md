@@ -14,7 +14,7 @@ Follow these steps to set up the project on your local machine.
 
 1.  Clone the repository:
     ```bash
-    git clone [https://github.com/Fadi88/RSEND_path_planing.git](https://github.com/Fadi88/RSEND_path_planing.git)
+    git clone https://github.com/Fadi88/RSEND_path_planing.git
     ```
 2.  Navigate to the project's root directory:
     ```bash
