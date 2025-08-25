@@ -9,8 +9,8 @@ bool marker_visible = true;
 
 visualization_msgs::Marker marker;
 
-double pickup_x = 2.0;
-double pickup_y = -1.0;
+double pickup_x = 6.0;
+double pickup_y = -2.5;
 double dropoff_x = -3.0;
 double dropoff_y = 4.0;
 

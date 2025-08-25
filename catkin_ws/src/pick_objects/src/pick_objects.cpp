@@ -8,21 +8,9 @@
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
 // Global variables
-geometry_msgs::Pose home_pose;
-bool home_pose_set = false;
+
 MoveBaseClient *ac;
 ros::Subscriber pose_sub;
-
-void poseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg)
-{
-    if (!home_pose_set)
-    {
-        home_pose = msg->pose.pose;
-        home_pose_set = true;
-        ROS_INFO("Home position set to (x:%.2f, y:%.2f)", home_pose.position.x, home_pose.position.y);
-        pose_sub.shutdown();
-    }
-}
 
 void markerCallback(const visualization_msgs::Marker::ConstPtr &marker_msg)
 {
@@ -46,7 +34,10 @@ void markerCallback(const visualization_msgs::Marker::ConstPtr &marker_msg)
             move_base_msgs::MoveBaseGoal home_goal;
             home_goal.target_pose.header.frame_id = "map";
             home_goal.target_pose.header.stamp = ros::Time::now();
-            home_goal.target_pose.pose = home_pose;
+            home_goal.target_pose.pose.orientation.x = 0.0;
+            home_goal.target_pose.pose.orientation.y = 0.0;
+            home_goal.target_pose.pose.orientation.z = 0.0;
+            home_goal.target_pose.pose.orientation.w = 1.0;
 
             ac->sendGoal(home_goal);
             ac->waitForResult();
@@ -80,9 +71,6 @@ int main(int argc, char **argv)
     {
         ROS_INFO("Waiting for the move_base action server to come up");
     }
-
-    // Subscribe to the initial pose to set the home coordinates
-    pose_sub = nh.subscribe("/amcl_pose", 1, poseCallback);
 
     // Subscribe to the marker topic to receive goals
     ros::Subscriber marker_sub = nh.subscribe("visualization_marker", 1, markerCallback);

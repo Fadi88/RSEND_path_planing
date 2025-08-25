@@ -47,10 +47,12 @@ check_error "Failed to add ROS setup to .bashrc."
 sudo apt update
 check_error "Failed to update package list."
 
-sudo apt install xterm ros-noetic-gazebo-ros-pkgs ros-noetic-gazebo-ros-control ros-noetic-slam-gmapping ros-noetic-gmapping -y
+sudo apt install git-lfs ros-noetic-gazebo-ros-pkgs ros-noetic-gazebo-ros-control ros-noetic-slam-gmapping ros-noetic-gmapping -y
 check_error "Failed to install Gazebo and Gmapping packages."
 
-sudo apt install ros-noetic-turtlebot3-msgs ros-noetic-turtlebot3 ros-noetic-turtlebot3-simulations ros-noetic-dwa-local-planner -y
+git lfs install
+
+sudo apt install ros-noetic-turtlebot3-msgs ros-noetic-teleop-twist-keyboard ros-noetic-turtlebot3 ros-noetic-turtlebot3-simulations ros-noetic-dwa-local-planner -y
 check_error "Failed to install TurtleBot3 packages."
 
 # Set the TurtleBot3 model
