@@ -1,6 +1,6 @@
-image: src/my_robot/maps/map.pgm
+image: map.pgm
 resolution: 0.050000
-origin: [-20.000000, -20.000000, 0.000000]
+origin: [-8.249428, -8.611853, 0.000000]
 negate: 0
 occupied_thresh: 0.65
 free_thresh: 0.196

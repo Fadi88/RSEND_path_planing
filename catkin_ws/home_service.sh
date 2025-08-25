@@ -29,10 +29,6 @@ roslaunch my_robot world.launch &
 PIDS+=($!)
 sleep 60
 
-echo "Launching map server..."
-rosrun map_server map_saver -f src/my_robot/maps/map &
-PIDS+=($!)
-
 echo "Launching gmapping..."
 roslaunch my_robot localization.launch &
 PIDS+=($!)

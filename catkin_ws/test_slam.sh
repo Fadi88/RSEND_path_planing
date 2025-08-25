@@ -23,18 +23,12 @@ function cleanup {
 trap cleanup EXIT
 
 echo "Launching TurtleBot3 simulation..."
-roslaunch turtlebot3_gazebo turtlebot3_house.launch &
+roslaunch my_robot world.launch &
 PIDS+=($!)
-sleep 10
+sleep 5  
 
-echo "Launching Gmapping demo..."
-roslaunch turtlebot3_slam turtlebot3_gmapping.launch &
+echo "Launching gmapping..."
+roslaunch my_robot mapping.launch &
 PIDS+=($!)
-
-echo "Launching Rviz with Gmapping visualization..."
-gnome-terminal --window --title="Gmapping Rviz" -- bash -c "roslaunch turtlebot3_navigation turtlebot3_navigation.launch" &
-
-echo "Launching keyboard teleop in a new window. Use that window to drive the robot."
-gnome-terminal --window --title="TurtleBot3 Teleop" -- bash -c "roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch" &
 
 read -p ""
