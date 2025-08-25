@@ -2,6 +2,8 @@
 
 # Source the ROS environment.
 source /opt/ros/noetic/setup.bash
+catkin_make
+source devel/setup.bash
 export TURTLEBOT3_MODEL=burger
 
 PIDS=()
@@ -22,15 +24,16 @@ function cleanup {
 
 trap cleanup EXIT
 
-echo "Launching TurtleBot3 simulation..."
+echo "Launching my robot simulation..."
 roslaunch my_robot world.launch &
 PIDS+=($!)
-sleep 5  
+sleep 60
 
 echo "Launching gmapping..."
 roslaunch my_robot localization.launch &
 PIDS+=($!)
 
+rosrun add_markers add_markers &
 rosrun pick_objects pick_objects &
 
 read -p ""

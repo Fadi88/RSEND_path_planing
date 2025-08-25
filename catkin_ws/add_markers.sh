@@ -24,33 +24,15 @@ function cleanup {
 
 trap cleanup EXIT
 
-echo "Launching TurtleBot3 simulation..."
-roslaunch turtlebot3_gazebo turtlebot3_world.launch &
+echo "Launching my robot simulation..."
+roslaunch my_robot world.launch &
 PIDS+=($!)
-sleep 5  
+sleep 60
 
-echo "Launching Rviz with Gmapping visualization..."
-gnome-terminal --window --title="Gmapping Rviz" -- bash -c "roslaunch turtlebot3_navigation turtlebot3_navigation.launch" &
+echo "Launching gmapping..."
+roslaunch my_robot localization.launch &
+PIDS+=($!)
 
-rostopic pub --once /initialpose geometry_msgs/PoseWithCovarianceStamped \
-"header:
-  seq: 0
-  stamp: {secs: 0, nsecs: 0}
-  frame_id: "map"
-pose:
-  pose:
-    position:
-      x: -2.0
-      y: -0.5
-      z: 0.0
-    orientation:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-      w: 1.0
-  covariance: [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.68539700]
-"
-sleep 2
 rosrun add_markers add_markers &
 
 read -p ""
