@@ -34,13 +34,13 @@ The project's architecture is built upon the standard ROS Navigation Stack and i
 
 ### **`add_markers`**
 This custom C++ node is responsible for defining and publishing navigation goals. 🎯
-* **Functionality**: This node publishes a **`visualization_msgs/Marker`** message to a specific ROS topic. This marker serves as the navigation goal for the robot.
-* **Behavior**: When the robot successfully reaches the target, this node detects the robot's proximity and removes the marker from the visualization, indicating that the task is complete.
+* **Functionality**: This node offers two services, update_marker which takes x,y cooridnates, and delete markers to delete everything.
+
 
 ### **`pick_objects`**
 This custom C++ node acts as the main mission controller.
-* **Functionality**: This node **subscribes** to the topic published by `add_markers`. When a new marker is received, it sends a goal to the **`move_base` action server**, instructing the robot to navigate to the marker's pose.
-* **Behavior**: Once the robot successfully reaches the target, the node automatically commands the robot to return to a pre-defined **home position**. This creates an autonomous pick-and-place loop, simulating a service task.
+* **Functionality**: This node **subscribes** to the topic published by `add_markers`. When a new marker is received it is saved localy.
+it also offer a service set_and_navigate to set the move_base to navigate to the last set marker.
 
 ### **`gmapping`**
 This is a standard ROS node that provides **Simultaneous Localization and Mapping (SLAM)**. 
