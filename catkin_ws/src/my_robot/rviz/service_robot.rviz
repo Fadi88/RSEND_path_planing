@@ -9,7 +9,6 @@ Panels:
         - /TF1/Tree1
         - /Global Map1/Costmap1
         - /Global Map1/Planner1
-        - /Local Map1
         - /Local Map1/Polygon1
         - /Local Map1/Costmap1
         - /Local Map1/Planner1
@@ -320,6 +319,14 @@ Visualization Manager:
       Topic: /move_base_simple/goal
       Unreliable: false
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: visualization_marker
+      Name: Marker
+      Namespaces:
+        pickup_marker: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -343,7 +350,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -1.5707963705062866
+      Angle: -8.66581916809082
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -353,10 +360,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 59.96953582763672
+      Scale: 54.714874267578125
       Target Frame: <Fixed Frame>
-      X: 0
-      Y: 0
+      X: 3.285818576812744
+      Y: -1.5901637077331543
     Saved: ~
 Window Geometry:
   Displays:
@@ -376,5 +383,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1279
-  X: 106
-  Y: 18
+  X: -32
+  Y: -32
