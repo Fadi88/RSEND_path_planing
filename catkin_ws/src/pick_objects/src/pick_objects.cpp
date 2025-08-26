@@ -6,9 +6,11 @@
 #include "pick_objects/SetAndNavigate.h"
 #include "pick_objects/ReturnHome.h"
 
+// Global variables to store the latest marker pose and a flag indicating if a marker has been received.
 geometry_msgs::PoseStamped latest_marker_pose;
 bool marker_received = false;
 
+// Typedef for the action client to make the code more readable.
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
 void markerCallback(const visualization_msgs::Marker::ConstPtr &msg)
@@ -52,10 +54,18 @@ bool handle_set_and_navigate(pick_objects::SetAndNavigate::Request &req,
 bool handle_return_home(pick_objects::ReturnHome::Request &req,
                         pick_objects::ReturnHome::Response &res)
 {
+    ROS_INFO("Returning home...");
+
     MoveBaseClient ac("move_base", true);
+    while (!ac.waitForServer(ros::Duration(5.0)))
+    {
+        ROS_INFO("Waiting for the move_base action server to come up");
+    }
+
     move_base_msgs::MoveBaseGoal goal;
 
     goal.target_pose.header.stamp = ros::Time::now();
+    goal.target_pose.header.frame_id = "map";
     goal.target_pose.pose.position.x = 0.0;
     goal.target_pose.pose.position.y = 0.0;
     goal.target_pose.pose.orientation.w = 1.0;
@@ -63,7 +73,11 @@ bool handle_return_home(pick_objects::ReturnHome::Request &req,
     ac.sendGoal(goal);
     ac.waitForResult();
 
-    return ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED;
+    // Set the response based on the action result.
+    bool success = ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED;
+    res.success = success;
+
+    return true;
 }
 
 int main(int argc, char **argv)
@@ -76,7 +90,7 @@ int main(int argc, char **argv)
     ros::ServiceServer service_1 = n.advertiseService("set_and_navigate", handle_set_and_navigate);
     ros::ServiceServer service_2 = n.advertiseService("return_home", handle_return_home);
 
-    ROS_INFO("Marker navigation server ready. Call the /set_and_navigate service to begin.");
+    ROS_INFO("Marker navigation server ready. Call the /set_and_navigate service or /return_home to begin.");
 
     ros::spin();
 

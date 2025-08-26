@@ -45,9 +45,8 @@ rosservice call /delete_marker
 sleep 5 # pickup time
 
 echo "phase 2 : return"
+rosservice call /return_home
 rosservice call /update_marker -- 0.0 0.0
 sleep 0.1
-rosservice call /set_and_navigate
-rosservice call /delete_marker
 
 read -p ""
