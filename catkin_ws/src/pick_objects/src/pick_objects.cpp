@@ -4,6 +4,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <tf/transform_listener.h>
 #include "pick_objects/SetAndNavigate.h"
+#include "pick_objects/ReturnHome.h"
 
 geometry_msgs::PoseStamped latest_marker_pose;
 bool marker_received = false;
@@ -48,6 +49,23 @@ bool handle_set_and_navigate(pick_objects::SetAndNavigate::Request &req,
     return ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED;
 }
 
+bool handle_return_home(pick_objects::ReturnHome::Request &req,
+                        pick_objects::ReturnHome::Response &res)
+{
+    MoveBaseClient ac("move_base", true);
+    move_base_msgs::MoveBaseGoal goal;
+
+    goal.target_pose.header.stamp = ros::Time::now();
+    goal.target_pose.pose.position.x = 0.0;
+    goal.target_pose.pose.position.y = 0.0;
+    goal.target_pose.pose.orientation.w = 1.0;
+
+    ac.sendGoal(goal);
+    ac.waitForResult();
+
+    return ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED;
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "pick_objects_server");
@@ -55,7 +73,8 @@ int main(int argc, char **argv)
 
     ros::Subscriber sub = n.subscribe("visualization_marker", 1, markerCallback);
 
-    ros::ServiceServer service = n.advertiseService("set_and_navigate", handle_set_and_navigate);
+    ros::ServiceServer service_1 = n.advertiseService("set_and_navigate", handle_set_and_navigate);
+    ros::ServiceServer service_2 = n.advertiseService("return_home", handle_return_home);
 
     ROS_INFO("Marker navigation server ready. Call the /set_and_navigate service to begin.");
 

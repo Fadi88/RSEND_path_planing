@@ -26,6 +26,7 @@ include_directories(
 add_service_files(
   FILES
   SetAndNavigate.srv
+  ReturnHome.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
