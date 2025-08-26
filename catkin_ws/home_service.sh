@@ -33,7 +33,7 @@ echo "Launching gmapping..."
 roslaunch my_robot localization.launch &
 PIDS+=($!)
 
-rosrun add_markers add_markers &
 rosrun pick_objects pick_objects &
+rosrun add_markers add_markers &
 
 read -p ""
