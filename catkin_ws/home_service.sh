@@ -33,7 +33,21 @@ echo "Launching gmapping..."
 roslaunch my_robot localization.launch &
 PIDS+=($!)
 
-rosrun pick_objects pick_objects &
-rosrun add_markers add_markers &
+rosrun pick_objects pick_objects_server &
+rosrun add_markers add_markers_server &
+sleep 5
+
+echo "phase 1 : pick up"
+rosservice call /update_marker -- 6.0 -2.5
+sleep 0.1
+rosservice call /set_and_navigate
+rosservice call /delete_marker
+sleep 5 # pickup time
+
+echo "phase 2 : return"
+rosservice call /update_marker -- 0.0 0.0
+sleep 0.1
+rosservice call /set_and_navigate
+rosservice call /delete_marker
 
 read -p ""

@@ -1,81 +1,63 @@
 #include <ros/ros.h>
+#include <visualization_msgs/Marker.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
-#include <visualization_msgs/Marker.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <tf/transform_listener.h>
+#include "pick_objects/SetAndNavigate.h"
 
-// Define a client for the move_base action
+geometry_msgs::PoseStamped latest_marker_pose;
+bool marker_received = false;
+
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
-// Global variables
-
-MoveBaseClient *ac;
-ros::Subscriber pose_sub;
-
-void markerCallback(const visualization_msgs::Marker::ConstPtr &marker_msg)
+void markerCallback(const visualization_msgs::Marker::ConstPtr &msg)
 {
-    if (marker_msg->action == visualization_msgs::Marker::ADD)
+    if (msg->action == visualization_msgs::Marker::ADD)
     {
-        ROS_INFO("Received a new marker. Setting it as the new goal.");
-
-        move_base_msgs::MoveBaseGoal goal;
-        goal.target_pose.header.frame_id = "map";
-        goal.target_pose.header.stamp = ros::Time::now();
-        goal.target_pose.pose = marker_msg->pose;
-
-        ac->sendGoal(goal);
-        ac->waitForResult();
-
-        if (ac->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-        {
-            ROS_INFO("Hooray, the robot reached the marker!");
-            ROS_INFO("Returning to home position...");
-
-            move_base_msgs::MoveBaseGoal home_goal;
-            home_goal.target_pose.header.frame_id = "map";
-            home_goal.target_pose.header.stamp = ros::Time::now();
-            home_goal.target_pose.pose.orientation.x = 0.0;
-            home_goal.target_pose.pose.orientation.y = 0.0;
-            home_goal.target_pose.pose.orientation.z = 0.0;
-            home_goal.target_pose.pose.orientation.w = 1.0;
-
-            ac->sendGoal(home_goal);
-            ac->waitForResult();
-
-            if (ac->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-            {
-                ROS_INFO("Successfully returned to home!");
-            }
-            else
-            {
-                ROS_WARN("Failed to return to home.");
-            }
-        }
-        else
-        {
-            ROS_WARN("The robot failed to reach the marker.");
-        }
+        latest_marker_pose.header = msg->header;
+        latest_marker_pose.pose = msg->pose;
+        marker_received = true;
     }
 }
 
-int main(int argc, char **argv)
+bool handle_set_and_navigate(pick_objects::SetAndNavigate::Request &req,
+                             pick_objects::SetAndNavigate::Response &res)
 {
-    ros::init(argc, argv, "pick_objects");
-    ros::NodeHandle nh;
+    if (!marker_received)
+    {
+        ROS_WARN("No marker pose received. Cannot send navigation goal.");
+        res.success = false;
+        return true;
+    }
 
-    // Set up the action client
-    MoveBaseClient action_client("move_base", true);
-    ac = &action_client;
-
-    while (!ac->waitForServer(ros::Duration(5.0)))
+    MoveBaseClient ac("move_base", true);
+    while (!ac.waitForServer(ros::Duration(5.0)))
     {
         ROS_INFO("Waiting for the move_base action server to come up");
     }
 
-    // Subscribe to the marker topic to receive goals
-    ros::Subscriber marker_sub = nh.subscribe("visualization_marker", 1, markerCallback);
+    move_base_msgs::MoveBaseGoal goal;
+    goal.target_pose = latest_marker_pose;
 
-    ROS_INFO("Pick objects node is running. Waiting for a marker to be published...");
+    ac.sendGoal(goal);
+
+    ROS_INFO("Navigation goal sent to x=%.2f, y=%.2f.", latest_marker_pose.pose.position.x, latest_marker_pose.pose.position.y);
+    res.success = true;
+    ac.waitForResult();
+
+    return ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED;
+}
+
+int main(int argc, char **argv)
+{
+    ros::init(argc, argv, "pick_objects_server");
+    ros::NodeHandle n;
+
+    ros::Subscriber sub = n.subscribe("visualization_marker", 1, markerCallback);
+
+    ros::ServiceServer service = n.advertiseService("set_and_navigate", handle_set_and_navigate);
+
+    ROS_INFO("Marker navigation server ready. Call the /set_and_navigate service to begin.");
 
     ros::spin();
 
